@@ -52,6 +52,10 @@ git remote add upstream https://github.com/ng-bootstrap/ng-bootstrap.git
 
 ## Installing NPM Modules and typings
 
+Globally install gulp and typings as follows:
+
+* `npm install -g gulp typings` (you might need to prefix this command with `sudo`)
+
 Next, install the JavaScript modules needed to build and test ng-bootstrap:
 
 ```shell
@@ -60,10 +64,6 @@ npm install
 # Install types
 npm run typings install
 ```
-
-Globally install gulp as follows:
-
-* `npm install -g gulp` (you might need to prefix this command with `sudo`)
 
 ## Build commands
 
