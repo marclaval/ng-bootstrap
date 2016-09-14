@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "declaration": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "stripInternal": true,
+    "outDir": "../out",
+    "rootDir": ".",
+    "sourceMap": true,
+    "inlineSources": true,
+    "skipLibCheck": true
+  },
+  "files": [
+    "./main.ts",
+    "./node_modules/@ng-bootstrap/ng-bootstrap/index.ts",
+    "../../typings/index.d.ts"
+  ],
+  "angularCompilerOptions": {
+    "strictMetadataEmit": true
+  }
+}
+

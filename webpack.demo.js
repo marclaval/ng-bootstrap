@@ -42,9 +42,9 @@ module.exports = function makeWebpackConfig() {
    * Reference: http://webpack.github.io/docs/configuration.html#entry
    */
   config.entry = {
-    'polyfills': './demo/src/polyfills.ts',
-    'vendor': './demo/src/vendor.ts',
-    'app': './demo/src/main.ts' // our angular app
+    'polyfills': './tmp/src/polyfills.ts',
+    'vendor': './tmp/src/vendor.ts',
+    'app': './tmp/src/main.ts' // our angular app
   };
 
   /**
@@ -63,29 +63,9 @@ module.exports = function makeWebpackConfig() {
    * Reference: http://webpack.github.io/docs/configuration.html#resolve
    */
   config.resolve = {
-    root: root('demo'),
+    modules: [root('tmp', 'src'), 'node_modules'],
     // only discover files that have those extensions
-    extensions: ['', '.ts', '.js', '.css', '.scss', '.html'],
-
-    alias: {
-      '@ng-bootstrap/ng-bootstrap': root('src/index.ts'),
-      '@ng-bootstrap/accordion': root('src/accordion/index.ts'),
-      '@ng-bootstrap/alert': root('src/alert/index.ts'),
-      '@ng-bootstrap/buttons': root('src/buttons/index.ts'),
-      '@ng-bootstrap/carousel': root('src/carousel/index.ts'),
-      '@ng-bootstrap/collapse': root('src/collapse/index.ts'),
-      '@ng-bootstrap/datepicker': root('src/datepicker/index.ts'),
-      '@ng-bootstrap/dropdown': root('src/dropdown/index.ts'),
-      '@ng-bootstrap/modal': root('src/modal/index.ts'),
-      '@ng-bootstrap/pagination': root('src/pagination/index.ts'),
-      '@ng-bootstrap/popover': root('src/popover/index.ts'),
-      '@ng-bootstrap/progressbar': root('src/progressbar/index.ts'),
-      '@ng-bootstrap/rating': root('src/rating/index.ts'),
-      '@ng-bootstrap/tabset': root('src/tabset/index.ts'),
-      '@ng-bootstrap/timepicker': root('src/timepicker/index.ts'),
-      '@ng-bootstrap/tooltip': root('src/tooltip/index.ts'),
-      '@ng-bootstrap/typeahead': root('src/typeahead/index.ts')
-    }
+    extensions: ['', '.ts', '.js', '.css', '.scss', '.html']
   };
 
   /**
@@ -99,22 +79,19 @@ module.exports = function makeWebpackConfig() {
       // Support for .ts files.
       {
         test: /\.ts$/,
-        loader: 'ts',
+        loader: 'awesome-typescript-loader',
         query: {
           'ignoreDiagnostics': [
-            2403, // 2403 -> Subsequent variable declarations
-            2300, // 2300 -> Duplicate identifier
-            2374, // 2374 -> Duplicate number index signature
-            2375, // 2375 -> Duplicate string index signature
-            2502  // 2502 -> Referenced directly or indirectly
+            2346, // 2346 -> Supplied parameters do not match any signature of call target
           ]
         },
-        exclude: [/node_modules\/(?!(ng2-.+))/]
+        include: root('tmp')
       },
 
       {
         test: /\.ts$/,
-        loader: 'angular2-template-loader'
+        loader: 'angular2-template-loader',
+        include: root('tmp')
       },
 
       // copy those assets to output
@@ -125,11 +102,11 @@ module.exports = function makeWebpackConfig() {
       // all css in src/style will be bundled in an external css file
       {
         test: /\.css$/,
-        exclude: root('demo', 'src', 'app'),
-        loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss')
+        exclude: root('tmp', 'src', 'app'),
+        loader: ExtractTextPlugin.extract({fallbackLoader: 'style',  loader: 'css?sourceMap!postcss'})
       },
       // all css required in src/app files will be merged in js files
-      {test: /\.css$/, include: root('demo', 'src', 'app'), loader: 'raw!postcss'},
+      {test: /\.css$/, include: root('tmp', 'src', 'app'), loader: 'raw!postcss'},
 
       // support for .scss files
       // use 'null' loader in test mode (https://github.com/webpack/null-loader)
@@ -137,10 +114,10 @@ module.exports = function makeWebpackConfig() {
       {
         test: /\.scss$/,
         exclude: root('src', 'app'),
-        loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss!sass')
+        loader: ExtractTextPlugin.extract({fallbackLoader: 'style',  loader: 'css?sourceMap!postcss!sass'})
       },
       // all css required in src/app files will be merged in js files
-      {test: /\.scss$/, exclude: root('demo', 'src', 'style'), loader: 'raw!postcss!sass'},
+      {test: /\.scss$/, exclude: root('tmp', 'src', 'style'), loader: 'raw!postcss!sass'},
 
       // support for .html as raw text
       // todo: change the loader to something that adds a hash to images
@@ -175,39 +152,42 @@ module.exports = function makeWebpackConfig() {
     // Inject script and link tags into html files
     // Reference: https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      template: './demo/src/public/index.html',
+      template: './tmp/src/public/index.html',
       chunksSortMode: 'dependency'
     }),
 
     // Extract css files
     // Reference: https://github.com/webpack/extract-text-webpack-plugin
     // Disabled when in test mode or not in build mode
-    new ExtractTextPlugin('css/[name].[hash].css', {disable: !isProd})
+    new ExtractTextPlugin({filename: 'css/[name].[hash].css', disable: !isProd})
   ];
 
   // Add build specific plugins
   if (isProd) {
     config.plugins.push(
+      new webpack.LoaderOptionsPlugin({
+        minimize: true,
+        debug: false
+      }),
+
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
       // Only emit files when there are no errors
       new webpack.NoErrorsPlugin(),
 
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#dedupeplugin
       // Dedupe modules in the output
-      new webpack.optimize.DedupePlugin(),
+      // TODO: reactivate once fixed, see https://github.com/webpack/webpack/issues/2644
+      //new webpack.optimize.DedupePlugin(),
 
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
       new webpack.optimize.UglifyJsPlugin({
-        // Angular 2 is broken again, disabling mangle until beta 6 that should fix the thing
-        // Todo: remove this with beta 6
-        mangle: false
       }),
 
       // Copy assets from the public folder
       // Reference: https://github.com/kevlened/copy-webpack-plugin
       new CopyWebpackPlugin([{
-        from: root('demo/src/public')
+        from: root('tmp/src/public')
       }])
     );
   }
@@ -229,7 +209,7 @@ module.exports = function makeWebpackConfig() {
    * Reference: http://webpack.github.io/docs/webpack-dev-server.html
    */
   config.devServer = {
-    contentBase: './demo/src/public',
+    contentBase: './tmp/src/public',
     historyApiFallback: true,
     stats: 'minimal' // none (or false), errors-only, minimal, normal (or true) and verbose
   };

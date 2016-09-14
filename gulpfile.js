@@ -16,6 +16,9 @@ var webpack = require('webpack');
 var typescript = require('typescript');
 var exec = require('child_process').exec;
 var isWin = /^win/.test(process.platform);
+var ngcExecutable = isWin ? 'node_modules\\.bin\\ngc.cmd' : './node_modules/.bin/ngc';
+var tscExecutable = isWin ? 'node_modules\\.bin\\tsc.cmd' : './node_modules/.bin/tsc';
+
 
 var PATHS = {
   src: 'src/**/*.ts',
@@ -26,7 +29,8 @@ var PATHS = {
   demoDist: 'demo/dist/**/*',
   typings: 'typings/index.d.ts',
   jasmineTypings: 'typings/globals/jasmine/index.d.ts',
-  demoApiDocs: 'demo/src'
+  demoApiDocs: 'demo/src',
+  tmp: 'tmp'
 };
 
 function webpackCallBack(taskName, gulpDone) {
@@ -42,8 +46,7 @@ function webpackCallBack(taskName, gulpDone) {
 gulp.task('clean:build', function() { return del('dist/'); });
 
 gulp.task('ngc', function(cb) {
-  var executable = isWin ? 'node_modules\\.bin\\ngc.cmd' : './node_modules/.bin/ngc';
-  exec(`${executable} -p ./tsconfig-es2015.json`, (e) => {
+  exec(`${ngcExecutable} -p ./tsconfig-es2015.json`, (e) => {
     if (e) console.log(e);
     del('./dist/waste');
     cb();
@@ -214,18 +217,56 @@ gulp.task('clean:demo', function() { return del('demo/dist'); });
 
 gulp.task('clean:demo-cache', function() { return del('.publish/'); });
 
-gulp.task(
-    'demo-server', ['generate-docs'],
-    shell.task(['webpack-dev-server --port 9090 --config webpack.demo.js --hot --inline --progress']));
+gulp.task('demo-server:webpack',
+  shell.task(['webpack-dev-server --port 9090 --config webpack.demo.js --hot --inline --progress']));
+gulp.task('demo-server:watch', function(neverDone) {
+  gulp
+    .watch([PATHS.demo])
+    .on("change", (file) => {
+      gulp.src(file.path, { base: './demo' }).pipe(gulp.dest(PATHS.tmp));
+    });
+  gulp
+    .watch([PATHS.src])
+    .on("change", (file) => {
+      gulp.src(file.path, { base: './src' }).pipe(gulp.dest(PATHS.tmp + '/src/node_modules/@ng-bootstrap/ng-bootstrap'));
+    });
+});
+gulp.task('demo-server', function(neverDone) {
+  runSequence('generate-docs', 'build:tmp:copy:demo', ['demo-server:webpack', 'demo-server:watch']);
+});
 
 gulp.task(
-    'build:demo', ['clean:demo', 'generate-docs'],
+    'build:demo:webpack', ['clean:demo', 'generate-docs'],
     shell.task(['MODE=build webpack --config webpack.demo.js --progress --profile --bail']));
+gulp.task('build:demo', function(neverDone) {
+  runSequence('clean:demo', 'generate-docs', 'build:aot:compile', 'build:demo:webpack');
+});
 
 gulp.task('demo-push', function() {
   return gulp.src(PATHS.demoDist)
       .pipe(ghPages({remoteUrl: "https://github.com/ng-bootstrap/ng-bootstrap.github.io.git", branch: "master"}));
 });
+
+// Demo AoT
+gulp.task('clean:tmp', function() { return del('tmp'); });
+gulp.task('build:tmp:copy:src', ['clean:tmp'], function() {
+  return gulp.src(PATHS.src).pipe(gulp.dest(PATHS.tmp + '/src/node_modules/@ng-bootstrap/ng-bootstrap'));
+});
+gulp.task('build:tmp:copy:demo', ['build:tmp:copy:src'], function() {
+  return gulp.src('demo/src/**/*').pipe(gulp.dest(PATHS.tmp + '/src'));
+});
+gulp.task('build:tmp:copy:assets', ['build:tmp:copy:demo'], function() {
+  return gulp.src(['demo/src/**/*', '!demo/src/**/*.ts']).pipe(gulp.dest(PATHS.tmp + '/out'));
+});
+gulp.task('build:aot:compile', ['build:tmp:copy:assets'], function (done) {
+  exec(`${ngcExecutable} -p ./tmp/src/tsconfig-demo-ngc.json`, function(e) {
+    if (e) console.log(e);
+    done()
+  }).stdout.on('data', function(data) {
+    console.log(data);
+  });
+});
+
 
 // Public Tasks
 gulp.task('clean', ['clean:build', 'clean:tests', 'clean:demo', 'clean:demo-cache']);

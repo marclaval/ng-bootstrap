@@ -2,6 +2,7 @@
 /typings/
 /dist/
 /temp/
+/tmp/
 /demo/dist/
 npm-debug.log
 .publish

@@ -94,15 +94,15 @@ export class NgbDropdown {
  */
 @Directive({
   selector: '[ngbDropdownToggle]',
-  host: {'class': 'dropdown-toggle', 'aria-haspopup': 'true', '[attr.aria-expanded]': '_dropdown.isOpen()'}
+  host: {'class': 'dropdown-toggle', 'aria-haspopup': 'true', '[attr.aria-expanded]': 'dropdown.isOpen()'}
 })
 export class NgbDropdownToggle {
-  constructor(private _dropdown: NgbDropdown) {}
+  constructor(public dropdown: NgbDropdown) {}
 
   @HostListener('click', ['$event'])
   toggleOpen($event) {
     $event.stopPropagation();
-    this._dropdown.toggle();
+    this.dropdown.toggle();
   }
 }
 
