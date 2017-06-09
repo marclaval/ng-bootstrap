@@ -33,7 +33,8 @@
     "install": "node misc/validate-commit.install.js",
     "test": "karma start karma.conf.js",
     "api-doc-tdd": "jasmine-node misc/api-doc.spec.js --autotest --watch misc/api-doc-test-cases/*.ts misc/api-doc.js",
-    "api-doc-test": "jasmine-node misc/api-doc.spec.js"
+    "api-doc-test": "jasmine-node misc/api-doc.spec.js",
+    "closure-compiler": "./scripts/prebuild_closure.sh && java -jar node_modules/google-closure-compiler/compiler.jar --flagfile closure.conf"
   },
   "repository": {
     "type": "git",
@@ -74,6 +75,7 @@
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
     "file-loader": "^0.9.0",
     "glob": "^7.1.1",
+    "google-closure-compiler": "^20170409.0.0",
     "gulp": "^3.9.1",
     "gulp-clang-format": "^1.0.23",
     "gulp-conventional-changelog": "^1.1.0",
@@ -106,7 +108,7 @@
     "reflect-metadata": "^0.1.8",
     "remap-istanbul": "^0.7.0",
     "run-sequence": "^1.2.2",
-    "rxjs": "^5.0.1",
+    "rxjs": "5.3.1",
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",
     "systemjs": "^0.19.40",

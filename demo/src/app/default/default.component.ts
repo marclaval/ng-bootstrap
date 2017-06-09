@@ -5,5 +5,5 @@ import {Component} from '@angular/core';
   templateUrl: './default.component.html'
 })
 export class DefaultComponent {
-  public version: string = process.env.version;
+  public version: string = '1.0.0-alpha.26';
 }
