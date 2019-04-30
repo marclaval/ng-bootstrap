@@ -185,7 +185,7 @@ export class NgbPopover implements OnInit, OnDestroy, OnChanges {
     this.openDelay = config.openDelay;
     this.closeDelay = config.closeDelay;
     this._popupService = new PopupService<NgbPopoverWindow>(
-        NgbPopoverWindow, injector, viewContainerRef, _renderer, componentFactoryResolver, _applicationRef);
+        NgbPopoverWindow, injector, viewContainerRef, _renderer, componentFactoryResolver, this._applicationRef);
 
     this._zoneSubscription = _ngZone.onStable.subscribe(() => {
       if (this._windowRef) {

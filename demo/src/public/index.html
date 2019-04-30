@@ -42,6 +42,9 @@
       __Zone_disable_blocking = true;
       __Zone_disable_PromiseRejectionEvent = true;
     </script>
+    <script>
+      window.goog = {getMsg: function(s) {return s;}}
+    </script>
   </head>
   <body>
     <ngbd-app></ngbd-app>

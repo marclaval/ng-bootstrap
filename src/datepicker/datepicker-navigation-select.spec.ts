@@ -89,8 +89,9 @@ describe('ngb-datepicker-navigation-select', () => {
     // out of range
     fixture.componentInstance.date = new NgbDate(2222, 22, 22);
     fixture.detectChanges();
-    expect(getMonthSelect(fixture.nativeElement).value).toBe('');
-    expect(getYearSelect(fixture.nativeElement).value).toBe('');
+
+    expect(getMonthSelect(fixture.nativeElement).value).toBe('1');
+    expect(getYearSelect(fixture.nativeElement).value).toBe('2015');
   });
 
   it('should have disabled select boxes when disabled', () => {

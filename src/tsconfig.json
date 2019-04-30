@@ -8,8 +8,9 @@
     "annotateForClosureCompiler": true,
     "skipTemplateCodegen": true,
     "strictMetadataEmit": true,
-    "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
+    "fullTemplateTypeCheck": false,
+    "strictInjectionParameters": true,
+    "enableIvy": "ngtsc"
   },
   "include": [
     "./**/*.ts"

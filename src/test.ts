@@ -23,6 +23,8 @@ import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angul
 
 import './test/jasmine.config';
 
+(window as any).goog = {getMsg: s => s};
+
 declare const require: any;
 
 // First, initialize the Angular testing environment.
